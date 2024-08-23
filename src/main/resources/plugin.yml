@@ -5,9 +5,10 @@ api-version: 1.12
 main: my.telir.stonesimulator.Main
 
 commands:
-  rc:
-    description: Reload server
-  test:
+  level:
+    aliases: [ l ]
+    usage: /level [player]
+    description: Show player level and xp
   playtime:
     aliases: [ pt ]
     usage: /playtime [player]

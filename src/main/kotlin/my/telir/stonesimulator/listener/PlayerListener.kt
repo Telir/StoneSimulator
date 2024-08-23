@@ -3,13 +3,8 @@ package my.telir.stonesimulator.listener
 import kotlinx.coroutines.runBlocking
 import my.telir.stonesimulator.instance
 import my.telir.stonesimulator.user.User
-import net.minecraft.server.v1_12_R1.EntityArmorStand
-import net.minecraft.server.v1_12_R1.EnumItemSlot
+import org.bukkit.Bukkit
 import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack
-import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -20,43 +15,26 @@ import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.event.player.*
-import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.SkullMeta
 
 
 class PlayerListener : Listener {
 
-    private val stoneHead = getStoneHead()
-
     @EventHandler
     fun onPlayerJoin(e: PlayerJoinEvent) {
         val player = e.player
-        var user: User?
         val uuid = player.uniqueId
-        runBlocking {
-            user = instance.databaseManager.loadUser(uuid)
-        }
+
+        var user: User?
+        runBlocking { user = instance.databaseManager.loadUser(uuid) }
         if (user == null) user = User(uuid)
+
         instance.users[uuid] = user!!
-
-        val location = player.location.apply { y -= 1.425 }
-        val world = (location.world as CraftWorld).handle
-        val nmsArmorStand = EntityArmorStand(world, location.x, location.y, location.z)
-
-        nmsArmorStand.isNoGravity = true
-        nmsArmorStand.setSlot(EnumItemSlot.HEAD, CraftItemStack.asNMSCopy(stoneHead))
-
-        world.addEntity(nmsArmorStand)
-
-        instance.armorstands[uuid] = (nmsArmorStand.bukkitEntity as ArmorStand).apply { isVisible = false }
     }
 
     @EventHandler
     fun onPlayerQuit(e: PlayerQuitEvent) {
         val uuid = e.player.uniqueId
-        runBlocking {
-            instance.databaseManager.saveUser(instance.users[uuid]!!)
-        }
+        runBlocking { instance.databaseManager.saveUser(instance.users[uuid]!!) }
         instance.users.remove(uuid)
         instance.armorstands[uuid]?.remove()
     }
@@ -73,6 +51,11 @@ class PlayerListener : Listener {
         }
 
         instance.armorstands[player.uniqueId]!!.teleport(player.location.apply { y -= 1.425 })
+    }
+
+    @EventHandler
+    fun onPlayerTeleport(e: PlayerTeleportEvent) {
+        if (e.cause == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) e.isCancelled = true
     }
 
     @EventHandler
@@ -112,11 +95,8 @@ class PlayerListener : Listener {
         e.isCancelled = true
     }
 
-    private fun getStoneHead(): ItemStack {
-        val item = ItemStack(Material.SKULL_ITEM, 1, 3)
-        val meta = item.itemMeta as SkullMeta
-        meta.owner = "stone_head_"
-        item.itemMeta = meta
-        return item
+    @EventHandler
+    fun onPlayerExpChange(e: PlayerExpChangeEvent) {
+        e.amount = 0
     }
 }

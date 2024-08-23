@@ -1,5 +1,6 @@
 package my.telir.stonesimulator
 
+import kotlinx.coroutines.runBlocking
 import my.telir.stonesimulator.listener.ChatListener
 import my.telir.stonesimulator.listener.EnderPearlListener
 import my.telir.stonesimulator.listener.PlayerListener
@@ -7,6 +8,7 @@ import my.telir.stonesimulator.listener.WorldListener
 import my.telir.stonesimulator.mongodb.DatabaseManager
 import my.telir.stonesimulator.settings.Settings
 import my.telir.stonesimulator.user.User
+import my.telir.stonesimulator.util.MathUtil
 import org.bukkit.Bukkit
 import org.bukkit.Difficulty
 import org.bukkit.command.Command
@@ -56,7 +58,7 @@ class Main : JavaPlugin() {
                 when (args.size) {
                     0 -> {
                         if (sender is ConsoleCommandSender) {
-                            sender.sendMessage("You need to select player name!")
+                            sender.sendMessage("§cYou need to select player name!")
                             return true
                         } else player = sender as Player
                     }
@@ -64,7 +66,7 @@ class Main : JavaPlugin() {
                     1 -> {
                         val targetPlayer = Bukkit.getPlayer(args[0])
                         if (targetPlayer == null) {
-                            sender.sendMessage("Player '${args[0]}' not found")
+                            sender.sendMessage("§cPlayer '${args[0]}' not found")
                             return true
                         } else player = targetPlayer
                     }
@@ -73,8 +75,56 @@ class Main : JavaPlugin() {
                 }
                 val user = users[player.uniqueId]!!
 
-                if (sender == player) sender.sendMessage("Your playtime is ${user.playTime} sec.")
-                else sender.sendMessage("'${player.displayName}' playtime is ${user.playTime} sec.")
+                val playTime = MathUtil.round(user.playTime.toDouble() / 3600, 2)
+                if (sender == player) sender.sendMessage("§9Your playtime is $playTime hours")
+                else sender.sendMessage("§9'${player.displayName}' playtime is $playTime hours")
+
+                return true
+            }
+
+            override fun onTabComplete(
+                sender: CommandSender,
+                command: Command,
+                alias: String,
+                args: Array<out String>
+            ): List<String> {
+                if (args.size == 1) {
+                    return Bukkit.getOnlinePlayers().map { it.name }
+                }
+                return listOf()
+            }
+        })
+
+        setExecutor("level", object : TabExecutor {
+            override fun onCommand(
+                sender: CommandSender,
+                command: Command,
+                label: String,
+                args: Array<out String>
+            ): Boolean {
+                val player: Player
+                when (args.size) {
+                    0 -> {
+                        if (sender is ConsoleCommandSender) {
+                            sender.sendMessage("§cYou need to select player name!")
+                            return true
+                        } else player = sender as Player
+                    }
+
+                    1 -> {
+                        val targetPlayer = Bukkit.getPlayer(args[0])
+                        if (targetPlayer == null) {
+                            sender.sendMessage("§cPlayer '${args[0]}' not found")
+                            return true
+                        } else player = targetPlayer
+                    }
+
+                    else -> return false
+                }
+                val user = users[player.uniqueId]!!
+
+                if (sender == player) sender.sendMessage("§9Your level is ${user.level} (${user.xp}/${user.requiredXP} xp)")
+                else sender.sendMessage("§9'${player.displayName}' level is ${user.level} (${user.xp}/${user.requiredXP} xp)")
 
                 return true
             }
@@ -95,6 +145,7 @@ class Main : JavaPlugin() {
 
     override fun onDisable() {
         armorstands.values.forEach { it.remove() }
+        users.values.forEach { runBlocking { databaseManager.saveUser(it) } }
     }
 
     private fun init() {
@@ -107,7 +158,15 @@ class Main : JavaPlugin() {
     }
 
     private fun userInit() {
-        Bukkit.getOnlinePlayers().forEach { users[it.uniqueId] = User(it.uniqueId) }
+        Bukkit.getOnlinePlayers().forEach {
+            val uuid = it.uniqueId
+
+            var user: User?
+            runBlocking { user = instance.databaseManager.loadUser(uuid) }
+            if (user == null) user = User(uuid)
+
+            instance.users[uuid] = user!!
+        }
     }
 
     private fun registerEvents(listener: Listener) {

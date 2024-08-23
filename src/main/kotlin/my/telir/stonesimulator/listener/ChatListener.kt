@@ -21,6 +21,7 @@ class ChatListener : Listener {
         val levelText = TextComponent("§f[§9${user.level}§f]").apply {
             this.hoverEvent = HoverEvent(Action.SHOW_TEXT, arrayOf(TextComponent("§e${user.xp}/${user.requiredXP} XP")))
         }
+
         e.recipients.forEach {
             it.spigot().sendMessage(
                 TextComponent("${player.displayName} "),

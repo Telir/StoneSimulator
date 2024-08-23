@@ -1,0 +1,14 @@
+name: '${name}'
+version: '${version}'
+description: '${description}'
+api-version: 1.12
+main: my.telir.stonesimulator.Main
+
+commands:
+  rc:
+    description: Reload server
+  test:
+  playtime:
+    aliases: [ pt ]
+    usage: /playtime [player]
+    description: Show player playtime

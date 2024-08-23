@@ -4,6 +4,7 @@ import my.telir.stonesimulator.listener.ChatListener
 import my.telir.stonesimulator.listener.EnderPearlListener
 import my.telir.stonesimulator.listener.PlayerListener
 import my.telir.stonesimulator.listener.WorldListener
+import my.telir.stonesimulator.mongodb.DatabaseManager
 import my.telir.stonesimulator.settings.Settings
 import my.telir.stonesimulator.user.User
 import org.bukkit.Bukkit
@@ -25,6 +26,7 @@ class Main : JavaPlugin() {
     lateinit var users: MutableMap<UUID, User>
     lateinit var armorstands: MutableMap<UUID, ArmorStand>
     lateinit var settings: Settings
+    lateinit var databaseManager: DatabaseManager
 
     override fun onEnable() {
         init()
@@ -43,47 +45,6 @@ class Main : JavaPlugin() {
         registerEvents(EnderPearlListener())
         registerEvents(WorldListener())
 
-        setExecutor("rc", object : TabExecutor {
-            override fun onCommand(
-                sender: CommandSender,
-                command: Command,
-                label: String,
-                args: Array<out String>
-            ): Boolean {
-                sender.sendMessage("Reloading start...")
-                server.reload()
-                sender.sendMessage("...Done")
-                return true
-            }
-
-            override fun onTabComplete(
-                sender: CommandSender,
-                command: Command,
-                alias: String,
-                args: Array<out String>
-            ): List<String> {
-                return listOf()
-            }
-        })
-        setExecutor("test", object : TabExecutor {
-            override fun onCommand(
-                sender: CommandSender,
-                command: Command,
-                label: String,
-                args: Array<out String>
-            ): Boolean {
-                return true
-            }
-
-            override fun onTabComplete(
-                sender: CommandSender,
-                command: Command,
-                alias: String,
-                args: Array<out String>
-            ): List<String> {
-                return listOf()
-            }
-        })
         setExecutor("playtime", object : TabExecutor {
             override fun onCommand(
                 sender: CommandSender,
@@ -142,6 +103,7 @@ class Main : JavaPlugin() {
         users = mutableMapOf()
         armorstands = mutableMapOf()
         settings = Settings(config)
+        databaseManager = DatabaseManager()
     }
 
     private fun userInit() {

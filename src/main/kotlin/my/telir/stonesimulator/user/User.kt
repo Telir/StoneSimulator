@@ -10,7 +10,6 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.lang.System.currentTimeMillis
 import java.util.*
-import kotlin.math.max
 
 private val settings = instance.settings
 
@@ -18,6 +17,7 @@ data class User(val uuid: UUID) {
     var level = 1
         set(value) {
             field = value; tryUnlock(); player.level = level
+            player.playerListName = "${player.displayName} §f[§9${level}§f]"
         }
 
     var xp = 0L
@@ -25,15 +25,15 @@ data class User(val uuid: UUID) {
             field = value; tryLevelUp(); player.exp = xp.toFloat() / requiredXP.toFloat()
         }
 
-    val totalXP: Long
-        get() = xp + (level - 1) * settings.startXPToLevel + max(0, level - 2) * settings.adjustXPToLevel
+//    val totalXP: Long
+//        get() = xp + (level - 1) * settings.startXPToLevel + max(0, level - 2) * settings.adjustXPToLevel
 
     val requiredXP: Long
         get() = settings.startXPToLevel - settings.adjustXPToLevel * (level - 1)
 
     var playTime = 0L
 
-    private var xpTime = 0L
+    var xpTime = 0L
     var chatCooldown = 0L
     var pearlCooldown = 0L
 

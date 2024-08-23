@@ -1,5 +1,6 @@
 package my.telir.stonesimulator.listener
 
+import kotlinx.coroutines.runBlocking
 import my.telir.stonesimulator.instance
 import my.telir.stonesimulator.user.User
 import net.minecraft.server.v1_12_R1.EntityArmorStand
@@ -30,7 +31,13 @@ class PlayerListener : Listener {
     @EventHandler
     fun onPlayerJoin(e: PlayerJoinEvent) {
         val player = e.player
-        instance.users[player.uniqueId] = User(player.uniqueId)
+        var user: User?
+        val uuid = player.uniqueId
+        runBlocking {
+            user = instance.databaseManager.loadUser(uuid)
+        }
+        if (user == null) user = User(uuid)
+        instance.users[uuid] = user!!
 
         val location = player.location.apply { y -= 1.425 }
         val world = (location.world as CraftWorld).handle
@@ -41,13 +48,17 @@ class PlayerListener : Listener {
 
         world.addEntity(nmsArmorStand)
 
-        instance.armorstands[player.uniqueId] = (nmsArmorStand.bukkitEntity as ArmorStand).apply { isVisible = false }
+        instance.armorstands[uuid] = (nmsArmorStand.bukkitEntity as ArmorStand).apply { isVisible = false }
     }
 
     @EventHandler
     fun onPlayerQuit(e: PlayerQuitEvent) {
-        instance.users.remove(e.player.uniqueId)
-        instance.armorstands[e.player.uniqueId]?.remove()
+        val uuid = e.player.uniqueId
+        runBlocking {
+            instance.databaseManager.saveUser(instance.users[uuid]!!)
+        }
+        instance.users.remove(uuid)
+        instance.armorstands[uuid]?.remove()
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -101,7 +112,7 @@ class PlayerListener : Listener {
         e.isCancelled = true
     }
 
-    fun getStoneHead(): ItemStack {
+    private fun getStoneHead(): ItemStack {
         val item = ItemStack(Material.SKULL_ITEM, 1, 3)
         val meta = item.itemMeta as SkullMeta
         meta.owner = "stone_head_"

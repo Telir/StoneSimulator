@@ -4,8 +4,8 @@ plugins {
 }
 
 group = "my.telir"
-version = "1.0-SNAPSHOT"
-description = "Stone Simualator"
+version = "1.0.0"
+description = "Stone Simulator"
 
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -32,12 +32,11 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.0")
+    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:5.1.2")
 
     compileOnly("com.destroystokyo.paper:paper-api:1.12.2-R0.1-SNAPSHOT")
-//    compileOnly("org.github.paperspigot:paperspigot-api:1.8.8-R0.1-20160806.221350-1")
 
     //BuildTools
-//    compileOnly(files("lib/spigot-1.8.8-R0.1-SNAPSHOT.jar"))
     compileOnly(files("lib/spigot-1.12.2-R0.1-SNAPSHOT.jar"))
 
 }

@@ -31,12 +31,13 @@ a main task: simply lying still and observing the world around.
 
 ## Installation
 
-1. Download the latest version of the plugin from the [releases page](#).
+1. Download the latest version of the plugin from the [releases page](https://github.com/Telir/StoneSimulator/releases).
 2. Place the `StoneSimulator.jar` file into your server's `plugins` directory.
 3. Place the `config.yml`' file into your server's `plugins/StoneSimulator` directory.
   You can also modify the values in it to suit your preferences.
 4. **[Optional] Connect to MongoDB:** To store player data using MongoDB:
    - Create a `database.yml` file in the `plugins/StoneSimulator` directory.
+   - Create collection `users` in database `stonesimulator`
    - Add your MongoDB connection string under the key `connectionString`.
    - Example:
     ```yaml
@@ -47,4 +48,4 @@ a main task: simply lying still and observing the world around.
 
 ## Support
 
-For issues, suggestions, or contributions, feel free to open an issue on the [GitHub repository](#) or contact the development team.
+For issues, suggestions, or contributions, feel free to open an issue on the [GitHub repository](https://github.com/Telir/StoneSimulator) or contact the development team.
